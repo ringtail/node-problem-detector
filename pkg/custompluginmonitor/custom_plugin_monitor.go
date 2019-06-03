@@ -184,15 +184,42 @@ func (c *customPluginMonitor) generateStatus(result cpmtypes.Result) *types.Stat
 					// change 4: Condition status do not change.
 					// condition reason changes or
 					// condition message changes when message based condition update is enabled.
-					condition.Transition = timestamp
-					condition.Reason = result.Rule.Reason
-					condition.Message = result.Message
-					events = append(events, util.GenerateConditionChangeEvent(
-						condition.Type,
-						status,
-						condition.Reason,
-						timestamp,
-					))
+
+					if status == types.True {
+						condition.Transition = timestamp
+						condition.Reason = result.Rule.Reason
+						condition.Message = result.Message
+						events = append(events, util.GenerateConditionChangeEvent(
+							condition.Type,
+							status,
+							condition.Reason,
+							timestamp,
+						))
+					} else {
+						// False:False or Unknown:Unknown
+						condition.Transition = timestamp
+						var defaultConditionReason string
+						var defaultConditionMessage string
+						for j := range c.config.DefaultConditions {
+							defaultCondition := &c.config.DefaultConditions[j]
+							if defaultCondition.Type == result.Rule.Condition {
+								defaultConditionReason = defaultCondition.Reason
+								defaultConditionMessage = defaultCondition.Message
+								break
+							}
+						}
+
+						events = append(events, util.GenerateConditionChangeEvent(
+							condition.Type,
+							status,
+							defaultConditionReason,
+							timestamp,
+						))
+
+						condition.Status = status
+						condition.Message = defaultConditionMessage
+						condition.Reason = defaultConditionReason
+					}
 				}
 
 				break
