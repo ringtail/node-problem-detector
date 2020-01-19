@@ -87,13 +87,18 @@ version:
 	     -ldflags '-X $(PKG)/pkg/version.version=$(VERSION)' \
 	     $(BUILD_TAGS) cmd/node_problem_detector.go
 
+./bin/fd_check:  $(PKG_SOURCES)
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux go build -o bin/fd_check \
+	     -ldflags '-X $(PKG)/pkg/version.version=$(VERSION)' \
+	     $(BUILD_TAGS) config/plugin/fd_check.go
+
 Dockerfile: Dockerfile.in
 	sed -e 's|@BASEIMAGE@|$(BASEIMAGE)|g' $< >$@
 
 test: vet fmt
 	go test -timeout=1m -v -race ./cmd/options ./pkg/... $(BUILD_TAGS)
 
-build-binaries: ./bin/node-problem-detector ./bin/log-counter
+build-binaries: ./bin/node-problem-detector ./bin/log-counter ./bin/fd_check
 
 build-container: build-binaries Dockerfile
 	docker build -t $(IMAGE) .
