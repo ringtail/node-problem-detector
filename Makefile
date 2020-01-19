@@ -103,7 +103,7 @@ build-binaries: ./bin/node-problem-detector ./bin/log-counter ./bin/fd_check
 build-container: build-binaries Dockerfile
 	docker build -t $(IMAGE) .
 
-build-tar: ./bin/node-problem-detector ./bin/log-counter
+build-tar: ./bin/node-problem-detector ./bin/log-counter ./bin/fd_check
 	tar -zcvf $(TARBALL) bin/ config/
 	sha1sum $(TARBALL)
 	md5sum $(TARBALL)
